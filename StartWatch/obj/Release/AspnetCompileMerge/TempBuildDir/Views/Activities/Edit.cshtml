@@ -1,0 +1,109 @@
+﻿@model StartWatch.Models.Activity
+
+@{
+    ViewBag.Title = "Edit";
+}
+
+<h2>Edit</h2>
+
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    
+    <div class="form-horizontal">
+        <h4>Activity</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        @Html.HiddenFor(model => model.Id)
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-2" for="Quota">Daily Quota (mins)</label>
+            <div class="col-md-10">
+                <input id="Quota" class="form-control text-box single-line" type="number" value="@(Model.Quota/60)" name="Quota" data-val-required="The Daily Quota field is required." data-val-number="The field Daily Quota must be a number." data-val="true">
+                <span class="field-validation-valid text-danger" data-valmsg-replace="true" data-valmsg-for="Quota"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-2" for="ProgressToday">Done Today (mins)</label>
+            <div class="col-md-10">
+                <input id="ProgressToday" class="form-control text-box single-line" type="number" value="@(Model.ProgressToday/60)" name="ProgressToday" data-val-required="The Done Today field is required." data-val-number="The field Done Today must be a number." data-val="true">
+                <span class="field-validation-valid text-danger" data-valmsg-replace="true" data-valmsg-for="ProgressToday"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-2" for="ProgressWeek">This Week (mins)</label>
+            <div class="col-md-10">
+                <input id="ProgressWeek" class="form-control text-box single-line" type="number" value="@(Model.ProgressWeek/60)" name="ProgressWeek" data-val-required="The This Week field is required." data-val-number="The field This Week must be a number." data-val="true">
+                <span class="field-validation-valid text-danger" data-valmsg-replace="true" data-valmsg-for="ProgressWeek"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-2" for="ProgressWeek">Total (mins)</label>
+            <div class="col-md-10">
+                <input id="ProgressTotal" class="form-control text-box single-line" type="number" value="@(Model.ProgressTotal/60)" name="ProgressTotal" data-val-required="The Total field is required." data-val-number="The field This Week must be a number." data-val="true">
+                <span class="field-validation-valid text-danger" data-valmsg-replace="true" data-valmsg-for="ProgressWeek"></span>
+            </div>
+        </div>
+
+        @*<div class="form-group">
+            @Html.LabelFor(model => model.ProgressToday, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.ProgressToday, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.ProgressToday, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.ProgressWeek, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.ProgressWeek, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.ProgressWeek, "", new { @class = "text-danger" })
+            </div>
+        </div>*@
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.CreationDate, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.CreationDate, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.CreationDate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Required, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                <div class="checkbox">
+                    @Html.EditorFor(model => model.Required)
+                    @Html.ValidationMessageFor(model => model.Required, "", new { @class = "text-danger" })
+                </div>
+            </div>
+        </div>
+
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Save" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Manage")
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

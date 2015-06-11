@@ -1,0 +1,319 @@
+﻿@model IEnumerable<StartWatch.Models.Activity>
+
+@{
+    ViewBag.Title = "Index";
+    var UserActivities = ViewBag.UserActivities as Array;
+    var ActName = ViewBag.CurrentActName;
+    var ActNumber = ViewBag.CurrentActNumber;
+    var ActToday = ViewBag.CurrentActToday;
+    var ActWeek = ViewBag.CurrentActWeek;
+    var ActTotal = ViewBag.CurrentActTotal;
+    var ActQuota = ViewBag.CurrentActQuota;
+    var ActAvg = ViewBag.CurrentActAvgSession;
+
+}
+
+@*<h2 id="texthere">Text</h2>
+
+
+<h2>Index</h2>
+
+<h3>Current Activity: @ViewBag.CurrentActName</h3>
+<p id="today">Progress Today: @ViewBag.CurrentActToday</p>
+<p id="total">This Week: @ViewBag.CurrentActWeek</p>*@
+
+<div id="selector" class="row">
+    <!-- activity selector -->
+    <div id="menu" class="col-sm-8 col-sm-offset-1 col-md-7 col-md-offset-2">
+        <select id="act_list">
+            <option value="-1">(Pause)</option>
+            @{
+
+                // populate with other activities
+                var i = 0;
+                foreach (var item in Model)
+                {
+                    if (i != ActNumber)
+                    {
+                        <option value="@i">@item.Name</option>
+                    }
+                    else
+                    {
+                        <option id="current" value="@i" selected>@item.Name</option>
+                    }
+                    i++;
+                }
+}
+
+        </select>
+    </div>
+    <!-- <div class="row"> -->
+    @if (ActNumber > -1)
+    {   
+    <div class="col-sm-3 col-md-3">
+        <button class="btn btn-default" id="btn-plus">+15 min</button>
+        <button class="btn btn-default" id="btn-min">-15 min</button>
+    </div>
+    }
+    <!-- </div> -->
+</div>
+
+@* Activity Info *@
+<div class="row" style="min-height: 384px;">
+    <div class="col-sm-3 col-sm-offset-3 panel panel-default">
+        <h2 class="text-center time">Today</h2>
+    </div>
+    <div class="col-sm-3 panel panel-info">
+        <h2 class="text-center time" id="time-today">loading...</h2>
+    </div>
+    <div class="col-sm-3 col-sm-offset-3 panel panel-default">
+        <h2 class="text-center time">Left</h2>
+    </div>
+    <div class="col-sm-3 panel panel-info">
+        <h2 class="text-center time" id="time-remaining">loading...</h2>
+    </div>
+    <div class="col-sm-3 col-sm-offset-3 panel panel-default">
+        <h2 class="text-center time">Total</h2>
+    </div>
+    <div class="col-sm-3 panel panel-info">
+        <h2 class="text-center time" id="time-total">loading...</h2>
+    </div>
+    <div class="col-sm-3 col-sm-offset-3 panel panel-default">
+        <h2 class="text-center time">Average</h2>
+    </div>
+    <div class="col-sm-3 panel panel-info">
+        <h2 class="text-center time" id="avg-session">loading...</h2>
+    </div>
+    <!-- <h2 class="text-center time" id="longest-session">Longest Session: loading...</h2> -->
+</div>
+<script type="text/javascript">
+
+    // activity data arrays
+    var act_todays  = [];
+    var act_weekly  = [];
+    var act_totals  = [];
+    var act_quotas = [];
+    var act_sessions = [];
+
+</script>
+
+@{
+    //setup activity data arrays
+    i = 0;
+    foreach (var item in Model)
+    {
+        <script type="text/javascript">
+            act_todays[@i] =    @item.ProgressToday;
+            act_weekly[@i] =    @item.ProgressWeek;
+            act_totals[@i] =    @item.ProgressTotal;
+            act_quotas[@i] =    @item.Quota;
+            act_sessions[@i] =  @item.SessionCount;
+        </script>
+        i++;
+    }
+}
+
+<script type="text/javascript">
+
+    // add dynamic timers with current duration
+    var act = @ActNumber;
+    var time_today = 0;
+    var time_weekly = 0;
+    var time_total = 0;
+    var time_remain = 0;
+    var avg_session = 0;
+
+    if (act > -1) {       // if: not paused
+        // initial values at page load
+        time_today = @ActToday;
+        time_weekly = @ActWeek;
+        time_total = @ActTotal;
+        time_remain = Math.max((@ActQuota - @ActToday), 0);
+        avg_session = @(ActTotal/Math.Max(ActAvg,1));
+
+        // update time divs
+        //updateTime(time_today, "#time-today"); time_today++;
+        //updateTime(time_total, "#time-total"); time_total++;
+        //updateTime(time_remain, "#time-remaining"); time_remain--;
+        //updateTime(avg_session, "#avg-session");
+
+        // cycle every second
+        var todayInterval = setInterval(function() { updateTime(time_today, "#time-today"); time_today++; },1000);
+        var totalInterval = setInterval(function() { updateTime(time_total, "#time-total"); time_total++; },1000);
+        var remainInterval = setInterval(function() {
+            if (time_remain > 0) {
+                updateTime(time_remain, "#time-remaining"); 
+                time_remain--;  
+                $("#time-remaining").css("color","black");
+            }
+            else {
+                $("#time-remaining").text("0:00");
+                $("#time-remaining").css("color","green");
+            }
+        },1000);
+        var avgInterval =  setInterval(function() { updateTime(avg_session, "#avg-session"); avg_session = ~~(time_today/act_sessions[act]);},1000);
+
+        function updateTime(display_time, id) {
+            var msg = "";
+            if (display_time > 3599) {
+                if (display_time / 3600 < 10) { msg += "0"; }
+                msg += ~~(display_time / 3600);
+                display_time %= 3600;
+                msg += ":";
+            }
+            if (display_time > 60) {
+                if (display_time / 60 < 10) { msg += "0"; }
+            }
+            else { msg += "0"; }
+            msg += ~~(display_time / 60) + ":";
+            display_time %= 60;
+            if (display_time < 10) { msg += ("0"); }
+            msg += display_time;
+            $(id).text(msg);
+        }
+    }
+
+    else {
+        $("#time-today").text("Paused");
+        $("#time-total").text("Paused");
+        $("#time-remaining").text("Paused");
+        $("#avg-session").text("Paused");
+    }
+
+    // handle setting new current task, without refreshing
+    $(function() {
+        $('#texthere').text("act = " + act);
+        $('#act_list').change(function() {
+
+
+            if (act === $("#act_list").val()) ; // if act doesn't change, do nothing
+            else {
+
+                if (act == -1) {        // if: unpausing, refresh page
+                    act = $("#act_list").val();
+                    $.get("/Activities/Set/?act=" + act);
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 500);
+                }
+
+                // store time for outgoing activity
+                act_todays[act] = time_today;
+                act_weekly[act] = time_weekly;
+                act_totals[act] = time_total;
+
+                act = $("#act_list").val();
+                $('#texthere').text("act = " + act);
+
+
+                if (act == -1) {	// if: TimeLine was paused, refresh page
+                    $.get("/Activities/Set/?act=" + act);
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 500);
+                }
+
+
+                else {      // else: update time for outgoing activity and set new activity in database
+                    $.get("/Activities/Set/?act=" + act);
+                    time_today = act_todays[act];
+                    time_weekly = act_weekly[act];
+                    time_total = act_totals[act];
+                    time_remain = act_quotas[act] - act_todays[act];
+                    avg_session = ~~(act_totals[act]/act_sessions[act]++);
+                    if (avg_session <= 0) { avg_session = 1 }
+                    $("#today").text(time_today);
+                    $('#texthere').text("act = " + act);
+                }
+            }
+            return false;
+        })
+    });
+
+    // add, subtract button listeners
+    $('#btn-plus').on('click', function () {
+        var timeAdd = 900;
+        $.get("/Activities/AdjustTime/?delta=" + timeAdd);
+        // add time to timers
+        act_todays[act] = time_today + 900;
+        act_weekly[act] = time_weekly + 900;
+        act_totals[act] = time_total + 900;
+        time_remain = act_quotas[act] - act_todays[act];
+        
+        time_today = act_todays[act];
+        time_weekly = act_weekly[act];
+        time_total = act_totals[act];
+        $("#today").text(time_today);
+    });
+
+
+    // add, subtract button listeners
+    $('#btn-min').on('click', function () {
+        var timeSub = -900;
+        $.get("/Activities/AdjustTime/?delta=" + timeSub);
+        // add time to timers
+        act_todays[act] = Math.max(time_today - 900, 0);
+        act_weekly[act] = Math.max(time_weekly - 900, 0);
+        act_totals[act] = Math.max(time_total - 900, 0);
+        time_remain = act_quotas[act] - act_todays[act];
+        
+        time_today = act_todays[act];
+        time_weekly = act_weekly[act];
+        time_total = act_totals[act];
+        avg_session = ~~(act_totals[act]/act_sessions[act]  );
+        $("#today").text(time_today);
+    });
+
+</script>
+
+@*
+            // first cycles
+            updateTime(time_today, "#time-today"); time_today++;
+            updateTime(time_total, "#time-total"); time_total++;
+            updateTime(time_remain, "#time-remaining"); time_remain--;
+            //updateTime(getAvgSession(), "#avg-session");
+            // getAvgSession();
+
+            // cycle every second
+            setInterval(function() { updateTime(time_today, "#time-today"); time_today++; },1000);
+            setInterval(function() { updateTime(time_total, "#time-total"); time_total++; },1000);
+            setInterval(function() {
+                if (time_remain > 0) {updateTime(time_remain, "#time-remaining"); time_remain--; }
+                else {
+                    $("#time-remaining").text("0:00");
+                    $("#time-remaining").css("color","green");
+                }
+            },1000);
+            setInterval(
+                function() {
+                    updateTime(getAvgSession(), "#avg-session");
+                    // avg_session = ~~(((avg_session *  max($act_sessions[getCurrentAct()],1);) + 1)/ max($act_sessions[getCurrentAct()],1));
+
+                    // // warn if sessions are less than 15 minutes
+                    // if (getAvgSession() < 900 &&  // $act_sessions[getCurrentAct()] > 1 &&  // $act_reqs[getCurrentAct()] == 0) {
+                    // 	$("#avg-session").append(" <span style='color: red' class='glyphicon glyphicon-remove'></span><br/><small>Your average session lengths should be longer than 15 minutes.</small>");
+                    // } else {
+                    // 	$("#avg-session").append(" <span style='color: green' class='glyphicon glyphicon-ok'></span>");
+                    // }
+                }
+                ,1000);
+
+            function updateTime(display_time, id) {
+                var msg = "";
+                if (display_time > 3599) {
+                    if (display_time / 3600 < 10) { msg += "0"; }
+                    msg += ~~(display_time / 3600);
+                    display_time %= 3600;
+                    msg += ":";
+                }
+                if (display_time > 60) {
+                    if (display_time / 60 < 10) { msg += "0"; }
+                }
+                else { msg += "0"; }
+                msg += ~~(display_time / 60) + ":";
+                display_time %= 60;
+                if (display_time < 10) { msg += ("0"); }
+                msg += display_time;
+                $(id).text(msg);
+            }
+    </script>*@

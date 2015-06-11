@@ -1,0 +1,201 @@
+﻿@{
+    ViewBag.Title = "Analyze";
+}
+
+<h2>Analysis</h2>
+
+<!-- ROW for total time breakdown -->
+<div class="row">
+    <div class="col-md-6">
+        <div id="graph-activities">Loading graph...</div>
+        <script type="text/javascript">var myData = [];</script> <!-- ARRAY for graph data -->
+        @{
+            foreach (var item in Model)
+            {
+                if (item.ProgressTotal > 60)
+                {
+                    <script type="text/javascript">
+                        myData.push(['@item.Name', @Math.Round((double)(item.ProgressTotal/60))]);
+                    </script>
+                }
+            }
+        }
+        <script type="text/javascript">
+            buildPieChart("graph-activities", "Division of Time By Activity (mins)", myData);
+        </script>
+    </div> <!-- END COLUMN -->
+
+    <div class="col-md-6">
+        <div id="graph-sessions">Loading graph...</div>
+        <script type="text/javascript">var myData = [];</script> <!-- ARRAY for graph data -->
+        @{
+            foreach (var item in Model)
+            {
+                if (item.ProgressTotal > 60)
+                {
+                    <script type="text/javascript">
+                        myData.push(['@item.Name', @Math.Round((double)(item.ProgressTotal/item.SessionCount)/60)]);
+                    </script>
+                }
+            }
+        }
+        <script type="text/javascript">
+            buildBarChart("graph-sessions", "Average Session Length (mins)", myData);
+        </script>
+    </div> <!-- END COLUMN -->
+    <!-- COLUMN for positive breakdown -->
+    <div class="col-md-6">
+        <div id="graph-success">Loading graph...</div>
+        <script type="text/javascript">var myData = [];</script> <!-- ARRAY for graph data -->
+        @{
+            bool HasData = false;
+            foreach (var item in Model)
+            {
+                if (item.ProgressTotal > 60)
+                {
+                    if (item.ProgressTotal > item.Quota && item.Quota > 0)    // only show activites meeting quota
+                    {
+                        HasData = true;
+                        double Percentage = ((double)(item.ProgressTotal - item.Quota) / (double)item.Quota) * 100;
+                        <script type="text/javascript">
+                            myData.push(['@item.Name', @Math.Round(Percentage)]);
+                        </script>
+                    }
+                }
+            }
+            if (HasData)
+            {
+                <script type="text/javascript">
+                    buildBarChart("graph-success", "Percentage Over Quota", myData);
+                </script>
+            }
+            else
+            {
+                <script type="text/javascript">
+                    $("#graph-success").html("<h2>All activities are below quota.</h2>");
+                </script>
+            }
+        }
+    </div> <!-- END COLUMN -->
+    
+    <!-- COLUMN for negative breakdown -->
+    <div class="col-md-6">
+        <div id="graph-failure">Loading graph...</div>
+        <script type="text/javascript">var myData = [];</script> <!-- ARRAY for graph data -->
+        @{
+            HasData = false;
+            foreach (var item in Model)
+            {
+                if (item.ProgressTotal <= item.Quota && item.Quota > 0)    // only show activites meeting quota
+                {
+                    double Percentage = Math.Round((double)(item.Quota - item.ProgressTotal) / (double)item.Quota);
+                    double Delta = Math.Round(((double)item.Quota - (double)item.ProgressTotal)/((double)item.Quota) * 100);
+                    if (Delta > 0)
+                    { 
+                        HasData = true;
+                    <script type="text/javascript">
+                        //myData.push(['@*item.Name', @Math.Round(Percentage)*@]);
+                        myData.push(['@item.Name', @Delta]);
+                    </script>
+        }
+                }
+
+            }
+            if (HasData)
+            {
+                <script type="text/javascript">
+                    buildBarChart("graph-failure", "Percentage Under Quota", myData);
+                </script>
+            }
+            else
+            {
+                <script type="text/javascript">
+                    $("#graph-failure").html("<h2 class='text-center'>All activities are above quota.</h2>");
+                </script>
+            }
+        }
+    </div> <!-- END COLUMN -->
+</div>
+
+@*<div class="col-md-6">
+        <div id="graph-days">Loading graph...</div>
+        <script type="text/javascript">var myData = []; var days = [];</script> <!-- ARRAY for graph data -->
+        @{
+            foreach (var item in Model)
+            {
+                if (item.ProgressTotal > 60 && item.Days.Contains("Monday"))
+                {
+                    <script type="text/javascript">
+                        days["mon"] += @item.ProgressTotal;
+                    </script>
+                }
+            }
+        }
+        <script type="text/javascript">
+            buildPieChart("graph-days", "Division of Time By Activity (mins)", myData);
+        </script>
+    </div> <!-- END COLUMN -->*@
+
+@*<!-- COLUMN for avg cost per car -->
+        <div class="col-md-6 col-lg-4">
+            <div id="graph-avg-vehicle">Loading graph...</div>
+            <script type="text/javascript">myData = [];</script>
+            @{
+                foreach (KeyValuePair<string, decimal> item in VehicleAvgPrices)
+                {
+                    <script type="text/javascript">
+                        myData.push(['@item.Key', @item.Value]);
+                    </script>
+                }
+                i++;
+            }
+            <script type="text/javascript">
+                buildBarChart("graph-avg-vehicle", "Average Cost Per Fillup", myData);
+            </script>
+        </div> <!-- END COLUMN -->
+    </div>*@
+
+@*<script type="text/javascript">
+        var chart;
+        var legend;
+        var myData = [];
+    </script>
+
+    @{
+        foreach (var item in Model)
+        {
+            if (item.ProgressTotal >= 60)   // if: activity has at least a minute of logging, add to JS array
+            {
+                EnoughData = true;
+                <script type="text/javascript">
+                    myData.push(["@item.Name", @item.ProgressTotal]);
+                </script>
+            }
+            TotalTime += item.ProgressTotal;
+        }
+    }
+
+    <script>
+        buildPieChart("graph-breakdown", "Division of Time By Activity", myData);
+    </script>
+
+    <script type="text/javascript">
+        // logic for 'clear' button
+        $('#btn-clear').on('click', function () {
+            var dataString = 'clear=true';		// update 'current_act' table
+            $.ajax({
+                type: "POST",
+                url: "process/process-input.php",
+                data: dataString,
+
+                // add time and refresh
+                success: function () {
+                    $("#timeline-entries").html("Your TimeLine has been cleared.");
+                }
+            });
+            return false;
+        })
+
+    </script>
+        <?php include_once('includes/footer.html'); ?>*@
+

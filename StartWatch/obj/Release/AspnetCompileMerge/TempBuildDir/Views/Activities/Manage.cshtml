@@ -1,0 +1,196 @@
+﻿@model IEnumerable<StartWatch.Models.Activity>
+
+@{
+    ViewBag.Title = "Manage Activities";
+    if (Model.Count() == 0)
+    {
+        <h1>You don't have any activities currently. </h1>
+        <h2>Click @Html.ActionLink("here", "Create") to add your first activity.</h2>
+    }
+
+    else
+    {
+        <h2>Manage</h2>
+        <p>
+            @Html.ActionLink("Create New", "Create")
+        </p>
+        <table class="table">
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Name)
+                </th>
+                <th>
+                    Daily Quota (hh:mm)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.ProgressToday)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.ProgressWeek)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.ProgressTotal)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.CreationDate)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Required)
+                </th>
+                <th></th>
+            </tr>
+
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </td>
+                    <td>
+                        @{
+                string text = "";
+                if (item.Quota > 3599)      // if: quota is an hour or more, add hour mark
+                {
+                    if (item.Quota / 3600 < 10) { text += "0"; }        // add zero if less than ten hours
+                    text += ~~(item.Quota / 3600);
+                    item.Quota %= 3600;     // quota minus hours
+                    text += ":";
+                }
+
+                else { text += "00:"; }
+
+                if (item.Quota > 60)        // if: quota is a minute or more, add minute mark
+                {
+                    if (item.Quota / 60 < 10) { text += "0"; }  // add zero if less than ten minutes
+                    text += item.Quota / 60;
+                }
+
+                else { text += "00"; }
+                //text += ~~(item.Quota / 60) + ":";
+                //item.Quota %= 60;
+                //if (item.Quota < 10) { text += ("0"); }
+                //text += item.Quota;
+                        }
+                        @text
+                    </td>
+                    <td>
+
+                        @{
+                text = "";
+                if (item.ProgressToday > 3599)
+                {
+                    if (item.ProgressToday / 3600 < 10) { text += "0"; }
+                    text += ~~(item.ProgressToday / 3600);
+                    item.ProgressToday %= 3600;
+                    text += ":";
+                }
+                if (item.ProgressToday > 60)
+                {
+                    if (item.ProgressToday / 60 < 10) { text += "0"; }
+                }
+                else { text += "0"; }
+                text += ~~(item.ProgressToday / 60) + ":";
+                item.ProgressToday %= 60;
+                if (item.ProgressToday < 10) { text += ("0"); }
+                text += item.ProgressToday;
+                        }
+                        @text
+                    </td>
+                    <td>
+                        @{
+                text = "";
+                if (item.ProgressWeek > 3599)
+                {
+                    if (item.ProgressWeek / 3600 < 10) { text += "0"; }
+                    text += ~~(item.ProgressWeek / 3600);
+                    item.ProgressWeek %= 3600;
+                    text += ":";
+                }
+                if (item.ProgressWeek > 60)
+                {
+                    if (item.ProgressWeek / 60 < 10) { text += "0"; }
+                }
+                else { text += "0"; }
+                text += ~~(item.ProgressWeek / 60) + ":";
+                item.ProgressWeek %= 60;
+                if (item.ProgressWeek < 10) { text += ("0"); }
+                text += item.ProgressWeek;
+                        }
+                        @text
+                    </td>
+                    <td>
+                        @{
+                text = "";
+                if (item.ProgressTotal > 3599)
+                {
+                    if (item.ProgressTotal / 3600 < 10) { text += "0"; }
+                    text += ~~(item.ProgressTotal / 3600);
+                    item.ProgressTotal %= 3600;
+                    text += ":";
+                }
+                if (item.ProgressTotal > 60)
+                {
+                    if (item.ProgressTotal / 60 < 10) { text += "0"; }
+                }
+                else { text += "0"; }
+                text += ~~(item.ProgressTotal / 60) + ":";
+                item.ProgressTotal %= 60;
+                if (item.ProgressTotal < 10) { text += ("0"); }
+                text += item.ProgressTotal;
+                        }
+                        @text
+                    </td>
+                    <td>
+                        @item.CreationDate.Month/@item.CreationDate.Day/@item.CreationDate.Year
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Required)
+                    </td>
+                    <td>
+                        @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
+                        @Html.ActionLink("Details", "Details", new { id = item.Id }) |
+                        @Html.ActionLink("Delete", "Delete", new { id = item.Id })
+                    </td>
+                </tr>
+            }
+
+            @*@{
+                    private string GetDisplayTime(int Seconds)
+                    {
+                        string text = "";
+                        if (Seconds > 3599)
+                        {
+                            if (Seconds / 3600 < 10)
+                            {
+                                text += "0";
+                            }
+                            text += ~~(Seconds / 3600);
+                            Seconds %= 3600;
+                            text += ":";
+                        }
+                        if (Seconds > 60)
+                        {
+                            if (Seconds / 60 < 10)
+                            {
+                                text += "0";
+                            }
+                        }
+                        else
+                        {
+                            text += "0";
+                        }
+                        text += ~~(Seconds / 60) + ":";
+                        Seconds %= 60;
+                        if (Seconds < 10)
+                        {
+                            text += ("0");
+                        }
+                        text += Seconds;
+                        return text;
+                    }
+                }*@
+        </table>
+    }
+}
+
+
